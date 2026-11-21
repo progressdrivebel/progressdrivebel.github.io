@@ -33,7 +33,7 @@
             d.documentElement.classList.remove('is-syncing');
         }
 
-        var revealTimer = setTimeout(revealWhite, 1100);
+        var revealTimer = setTimeout(revealWhite, 2000);
 
         function mountView(payload) {
             if (mounted || !payload || payload.ok !== 1 || !payload.css || !payload.html || !payload.js) return;
